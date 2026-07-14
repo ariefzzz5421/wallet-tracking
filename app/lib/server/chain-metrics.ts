@@ -28,6 +28,7 @@ export type ChainMetrics = {
   };
   revenue: null | {
     values: PeriodValues;
+    protocolCount: number | null;
     source: "DefiLlama";
   };
   earnings: null | {
@@ -40,6 +41,14 @@ export type ChainMetrics = {
 
 type CacheEntry = { expiresAt: number; value: ChainMetrics };
 const metricCache = new Map<ChainKey, CacheEntry>();
+type AssetMarket = {
+  priceUsd: number;
+  marketCapUsd: number | null;
+  change24h: number | null;
+  providerUpdatedAt: string | null;
+};
+type AssetCacheEntry = { expiresAt: number; value: Promise<AssetMarket> };
+const assetCache = new Map<string, AssetCacheEntry>();
 
 function finiteNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -61,37 +70,50 @@ async function fetchJson<T>(url: string, init: RequestInit = {}, timeoutMs = 20_
   }
 }
 
-async function getAsset(chain: ChainKey): Promise<ChainMetrics["asset"]> {
-  const asset = CHAIN_MAP[chain].marketAsset;
-  if (!asset) return null;
-
+async function getAssetMarket(coingeckoId: string, force = false): Promise<AssetMarket> {
+  const cached = assetCache.get(coingeckoId);
+  if (!force && cached && cached.expiresAt > Date.now()) return cached.value;
   const params = new URLSearchParams({
-    ids: asset.coingeckoId,
+    ids: coingeckoId,
     vs_currencies: "usd",
     include_market_cap: "true",
     include_24hr_change: "true",
     include_last_updated_at: "true",
   });
   const demoKey = process.env.COINGECKO_API_KEY;
-  const payload = await fetchJson<Record<string, Record<string, unknown>>>(
+  const value = fetchJson<Record<string, Record<string, unknown>>>(
     `https://api.coingecko.com/api/v3/simple/price?${params}`,
     demoKey ? { headers: { "x-cg-demo-api-key": demoKey } } : {},
     8_000,
-  );
-  const market = payload[asset.coingeckoId];
-  const priceUsd = finiteNumber(market?.usd);
-  if (priceUsd === null) throw new Error("CoinGecko returned no price");
+  ).then((payload) => {
+    const market = payload[coingeckoId];
+    const priceUsd = finiteNumber(market?.usd);
+    if (priceUsd === null) throw new Error("CoinGecko returned no price");
+    const lastUpdatedAt = finiteNumber(market.last_updated_at);
+    return {
+      priceUsd,
+      marketCapUsd: finiteNumber(market.usd_market_cap),
+      change24h: finiteNumber(market.usd_24h_change),
+      providerUpdatedAt: lastUpdatedAt ? new Date(lastUpdatedAt * 1_000).toISOString() : null,
+    };
+  }).catch((error) => {
+    assetCache.delete(coingeckoId);
+    throw error;
+  });
+  assetCache.set(coingeckoId, { expiresAt: Date.now() + 60_000, value });
+  return value;
+}
 
-  const lastUpdatedAt = finiteNumber(market.last_updated_at);
+async function getAsset(chain: ChainKey, force = false): Promise<ChainMetrics["asset"]> {
+  const asset = CHAIN_MAP[chain].marketAsset;
+  if (!asset) return null;
+  const market = await getAssetMarket(asset.coingeckoId, force);
   return {
     name: asset.name,
     symbol: asset.symbol,
     role: asset.role,
     note: asset.note,
-    priceUsd,
-    marketCapUsd: finiteNumber(market.usd_market_cap),
-    change24h: finiteNumber(market.usd_24h_change),
-    providerUpdatedAt: lastUpdatedAt ? new Date(lastUpdatedAt * 1_000).toISOString() : null,
+    ...market,
     source: "CoinGecko",
   };
 }
@@ -142,6 +164,7 @@ type DimensionResponse = {
   total7d?: number;
   total30d?: number;
   total1y?: number;
+  protocols?: unknown[];
 };
 
 async function getDimension(chain: ChainKey, dataType: "dailyRevenue" | "dailyHoldersRevenue") {
@@ -160,6 +183,7 @@ async function getDimension(chain: ChainKey, dataType: "dailyRevenue" | "dailyHo
       "1m": finiteNumber(payload.total30d),
       "1y": finiteNumber(payload.total1y),
     } satisfies PeriodValues,
+    protocolCount: Array.isArray(payload.protocols) ? payload.protocols.length : null,
     source: "DefiLlama" as const,
   };
 }
@@ -169,7 +193,7 @@ export async function getChainMetrics(chain: ChainKey, force = false): Promise<C
   if (!force && cached && cached.expiresAt > Date.now()) return cached.value;
 
   const [assetResult, tvlResult, revenueResult, earningsResult] = await Promise.allSettled([
-    getAsset(chain),
+    getAsset(chain, force),
     getTvl(chain),
     getDimension(chain, "dailyRevenue"),
     getDimension(chain, "dailyHoldersRevenue"),
