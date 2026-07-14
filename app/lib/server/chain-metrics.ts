@@ -16,12 +16,14 @@ export type ChainMetrics = {
     priceUsd: number;
     marketCapUsd: number | null;
     change24h: number | null;
+    providerUpdatedAt: string | null;
     source: "CoinGecko";
   };
   tvl: null | {
     currentUsd: number;
     changes: PeriodValues;
     chart: Array<{ date: number; value: number }>;
+    resolution: "daily";
     source: "DefiLlama";
   };
   revenue: null | {
@@ -68,6 +70,7 @@ async function getAsset(chain: ChainKey): Promise<ChainMetrics["asset"]> {
     vs_currencies: "usd",
     include_market_cap: "true",
     include_24hr_change: "true",
+    include_last_updated_at: "true",
   });
   const demoKey = process.env.COINGECKO_API_KEY;
   const payload = await fetchJson<Record<string, Record<string, unknown>>>(
@@ -79,6 +82,7 @@ async function getAsset(chain: ChainKey): Promise<ChainMetrics["asset"]> {
   const priceUsd = finiteNumber(market?.usd);
   if (priceUsd === null) throw new Error("CoinGecko returned no price");
 
+  const lastUpdatedAt = finiteNumber(market.last_updated_at);
   return {
     name: asset.name,
     symbol: asset.symbol,
@@ -87,6 +91,7 @@ async function getAsset(chain: ChainKey): Promise<ChainMetrics["asset"]> {
     priceUsd,
     marketCapUsd: finiteNumber(market.usd_market_cap),
     change24h: finiteNumber(market.usd_24h_change),
+    providerUpdatedAt: lastUpdatedAt ? new Date(lastUpdatedAt * 1_000).toISOString() : null,
     source: "CoinGecko",
   };
 }
@@ -115,8 +120,7 @@ async function getTvl(chain: ChainKey): Promise<ChainMetrics["tvl"]> {
 
   const oneYearAgo = latest.date - 365 * 86_400;
   const recent = points.filter((point) => point.date >= oneYearAgo);
-  const step = Math.max(1, Math.ceil(recent.length / 72));
-  const chart = recent.filter((_, index) => index % step === 0);
+  const chart = recent;
   if (chart.at(-1)?.date !== latest.date) chart.push(latest);
 
   return {
@@ -128,6 +132,7 @@ async function getTvl(chain: ChainKey): Promise<ChainMetrics["tvl"]> {
       "1y": tvlChange(points, 365 * 86_400),
     },
     chart,
+    resolution: "daily",
     source: "DefiLlama",
   };
 }
@@ -159,9 +164,9 @@ async function getDimension(chain: ChainKey, dataType: "dailyRevenue" | "dailyHo
   };
 }
 
-export async function getChainMetrics(chain: ChainKey): Promise<ChainMetrics> {
+export async function getChainMetrics(chain: ChainKey, force = false): Promise<ChainMetrics> {
   const cached = metricCache.get(chain);
-  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  if (!force && cached && cached.expiresAt > Date.now()) return cached.value;
 
   const [assetResult, tvlResult, revenueResult, earningsResult] = await Promise.allSettled([
     getAsset(chain),

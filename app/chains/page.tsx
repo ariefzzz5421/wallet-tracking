@@ -28,7 +28,6 @@ export default function ChainsPage() {
             <article className={`chain-directory-card ${tracked ? "tracked" : ""}`} key={chain.key}>
               <div className="chain-card-top">
                 <span className="chain-index">{String(index + 1).padStart(2, "0")}</span>
-                <ChainLogo chain={chain.key} size={58} />
                 <button
                   type="button"
                   className="track-toggle"
@@ -40,7 +39,7 @@ export default function ChainsPage() {
               </div>
               <div className="chain-card-copy">
                 <div><span>{chain.layer}</span><i className={`status-dot ${chain.status}`} /> <small>{chain.status}</small></div>
-                <h2>{chain.name}</h2>
+                <div className="chain-card-title"><ChainLogo chain={chain.key} size={54} /><h2>{chain.name}</h2></div>
                 <p>{chain.description}</p>
               </div>
               <div className="chain-card-foot">

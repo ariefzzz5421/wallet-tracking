@@ -31,7 +31,7 @@ export type ChainDefinition = {
 export const CHAINS: ChainDefinition[] = [
   {
     key: "ethereum",
-    name: "Ethereum L1",
+    name: "Ethereum",
     short: "ETH",
     logo: "/chains/ethereum.png",
     status: "live",
@@ -90,13 +90,13 @@ export const CHAINS: ChainDefinition[] = [
   },
   {
     key: "base",
-    name: "Base L2",
+    name: "Base",
     short: "BASE",
     logo: "/chains/base.png",
     status: "live",
     zerionId: "base",
     explorer: "https://base.blockscout.com",
-    layer: "Ethereum L2",
+    layer: "Layer 2",
     description: "OP Stack rollup using Ethereum for settlement and ETH for network fees.",
     defiLlamaSlug: "base",
     defiLlamaName: "Base",
@@ -135,7 +135,7 @@ export const CHAINS: ChainDefinition[] = [
     logo: "/chains/robinhood.png",
     status: "live",
     explorer: "https://robinhoodchain.blockscout.com",
-    layer: "Ethereum L2",
+    layer: "Layer 2",
     description: "Arbitrum-based network for tokenized real-world and digital assets.",
     defiLlamaSlug: "robinhood-chain",
     defiLlamaName: "Robinhood Chain",

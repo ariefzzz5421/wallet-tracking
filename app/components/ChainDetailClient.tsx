@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type PointerEvent } from "react";
 import type { ChainMetrics, MetricPeriod } from "../lib/server/chain-metrics";
 import { CHAINS, type ChainDefinition } from "../lib/chains";
 import { ChainLogo } from "./ChainLogo";
@@ -38,44 +38,123 @@ function percent(value: number | null) {
   return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
 }
 
-function Sparkline({ points }: { points: Array<{ date: number; value: number }> }) {
+const PERIOD_SECONDS: Record<MetricPeriod, number> = {
+  "1d": 86_400,
+  "1w": 7 * 86_400,
+  "1m": 30 * 86_400,
+  "1y": 365 * 86_400,
+};
+
+function dateLabel(timestamp: number) {
+  return new Intl.DateTimeFormat("en-US", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(timestamp * 1_000));
+}
+
+function InteractiveTvlChart({ points, period }: { points: Array<{ date: number; value: number }>; period: MetricPeriod }) {
+  const [hoveredDate, setHoveredDate] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const filteredPoints = useMemo(() => {
+    const latest = points.at(-1);
+    if (!latest) return [];
+    const visible = points.filter((point) => point.date >= latest.date - PERIOD_SECONDS[period]);
+    return visible.length >= 2 ? visible : points.slice(-2);
+  }, [period, points]);
+
   const geometry = useMemo(() => {
-    if (points.length < 2) return null;
-    const width = 720;
-    const height = 210;
-    const minDate = points[0].date;
-    const maxDate = points.at(-1)?.date ?? minDate + 1;
-    const values = points.map((point) => point.value);
+    if (filteredPoints.length < 2) return null;
+    const width = 1_000;
+    const height = 250;
+    const minDate = filteredPoints[0].date;
+    const maxDate = filteredPoints.at(-1)?.date ?? minDate + 1;
+    const values = filteredPoints.map((point) => point.value);
     const minValue = Math.min(...values);
     const maxValue = Math.max(...values);
     const valueRange = Math.max(1, maxValue - minValue);
     const dateRange = Math.max(1, maxDate - minDate);
-    const line = points.map((point) => {
+    const coordinates = filteredPoints.map((point) => {
       const x = ((point.date - minDate) / dateRange) * width;
-      const y = height - ((point.value - minValue) / valueRange) * (height - 16) - 8;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(" ");
+      const y = height - ((point.value - minValue) / valueRange) * (height - 28) - 14;
+      return { x, y };
+    });
+    const line = coordinates.map(({ x, y }) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
     const last = line.split(" ").at(-1) ?? `${width},${height}`;
-    return { width, height, line, area: `0,${height} ${line} ${last.split(",")[0]},${height}` };
-  }, [points]);
+    return { width, height, line, coordinates, area: `0,${height} ${line} ${last.split(",")[0]},${height}` };
+  }, [filteredPoints]);
+
+  const requestedDate = hoveredDate ?? selectedDate;
+  const requestedIndex = requestedDate === null ? -1 : filteredPoints.findIndex((point) => point.date === requestedDate);
+  const activeIndex = requestedIndex >= 0 ? requestedIndex : Math.max(0, filteredPoints.length - 1);
+  const activePoint = filteredPoints[activeIndex];
+  const previousPoint = filteredPoints[Math.max(0, activeIndex - 1)];
+  const activeChange = activePoint && previousPoint?.value > 0
+    ? ((activePoint.value - previousPoint.value) / previousPoint.value) * 100
+    : null;
+
+  function handlePointerMove(event: PointerEvent<SVGSVGElement>) {
+    if (!geometry) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
+    const index = Math.round(ratio * (filteredPoints.length - 1));
+    setHoveredDate(filteredPoints[index]?.date ?? null);
+  }
+
+  function handleKeyDown(event: KeyboardEvent<SVGSVGElement>) {
+    if (!filteredPoints.length) return;
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    let nextIndex = activeIndex;
+    if (event.key === "ArrowLeft") nextIndex = Math.max(0, activeIndex - 1);
+    if (event.key === "ArrowRight") nextIndex = Math.min(filteredPoints.length - 1, activeIndex + 1);
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = filteredPoints.length - 1;
+    setSelectedDate(filteredPoints[nextIndex].date);
+  }
 
   if (!geometry) return <div className="chart-unavailable">TVL history is not long enough to chart.</div>;
+  const activeCoordinate = geometry.coordinates[activeIndex];
   return (
-    <svg className="tvl-chart" viewBox={`0 0 ${geometry.width} ${geometry.height}`} role="img" aria-label="TVL history over the last year">
-      <defs>
-        <linearGradient id="tvlFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#dfff59" stopOpacity=".55" />
-          <stop offset="1" stopColor="#dfff59" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={geometry.area} fill="url(#tvlFill)" />
-      <polyline points={geometry.line} fill="none" stroke="currentColor" strokeWidth="3" vectorEffect="non-scaling-stroke" />
-    </svg>
+    <div className="interactive-chart">
+      <div className="chart-live-preview" aria-live="polite">
+        <div><span><i /> LIVE TVL</span><strong>{compactUsd(activePoint?.value ?? null)}</strong></div>
+        <div><small>{activePoint ? dateLabel(activePoint.date) : "—"}</small><b className={(activeChange ?? 0) >= 0 ? "positive" : "negative"}>{percent(activeChange)} vs prior point</b></div>
+      </div>
+      <svg
+        className="tvl-chart"
+        viewBox={`0 0 ${geometry.width} ${geometry.height}`}
+        role="img"
+        tabIndex={0}
+        aria-label={`Interactive TVL chart for ${period.toUpperCase()}. Use left and right arrow keys to inspect points.`}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={() => setHoveredDate(null)}
+        onClick={() => setSelectedDate(activePoint?.date ?? null)}
+        onKeyDown={handleKeyDown}
+      >
+        <defs>
+          <linearGradient id="tvlFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#dfff59" stopOpacity=".62" />
+            <stop offset="1" stopColor="#dfff59" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="62.5" x2={geometry.width} y2="62.5" className="chart-grid-line" />
+        <line x1="0" y1="125" x2={geometry.width} y2="125" className="chart-grid-line" />
+        <line x1="0" y1="187.5" x2={geometry.width} y2="187.5" className="chart-grid-line" />
+        <polygon points={geometry.area} fill="url(#tvlFill)" />
+        <polyline points={geometry.line} fill="none" stroke="currentColor" strokeWidth="3" vectorEffect="non-scaling-stroke" />
+        {activeCoordinate && <>
+          <line x1={activeCoordinate.x} y1="0" x2={activeCoordinate.x} y2={geometry.height} className="chart-cursor-line" />
+          <circle cx={activeCoordinate.x} cy={activeCoordinate.y} r="7" className="chart-active-point" />
+        </>}
+      </svg>
+      <div className="chart-axis"><span>{dateLabel(filteredPoints[0].date)}</span><span>{period.toUpperCase()} · daily source points</span><span>{dateLabel(filteredPoints.at(-1)?.date ?? filteredPoints[0].date)}</span></div>
+    </div>
   );
 }
 
-function MetricStatus({ source }: { source: string }) {
-  return <span className="metric-source"><i /> {source}</span>;
+function ProviderIcon({ source }: { source: "CoinGecko" | "DefiLlama" }) {
+  return <span className={`provider-icon provider-icon-${source.toLowerCase()}`} aria-hidden="true">{source === "CoinGecko" ? "CG" : "DL"}</span>;
+}
+
+function MetricStatus({ source }: { source: "CoinGecko" | "DefiLlama" }) {
+  return <span className="metric-source"><ProviderIcon source={source} /> {source}</span>;
 }
 
 export function ChainDetailClient({ chain }: { chain: ChainDefinition }) {
@@ -86,9 +165,9 @@ export function ChainDetailClient({ chain }: { chain: ChainDefinition }) {
   const { isTracked, toggleChain } = useTrackedChains();
   const tracked = isTracked(chain.key);
 
-  const loadMetrics = useCallback(async (signal?: AbortSignal) => {
+  const loadMetrics = useCallback(async (signal?: AbortSignal, force = false) => {
     try {
-      const response = await fetch(`/api/chains/${chain.key}/metrics`, { signal });
+      const response = await fetch(`/api/chains/${chain.key}/metrics${force ? "?fresh=1" : ""}`, { signal });
       const result = await response.json() as ChainMetrics & { error?: string };
       if (!response.ok) throw new Error(result.error || "Metrics request failed");
       setMetrics(result);
@@ -114,7 +193,7 @@ export function ChainDetailClient({ chain }: { chain: ChainDefinition }) {
 
   function refresh() {
     setLoading(true);
-    void loadMetrics();
+    void loadMetrics(undefined, true);
   }
 
   const revenue = metrics?.revenue?.values[period] ?? null;
@@ -152,7 +231,8 @@ export function ChainDetailClient({ chain }: { chain: ChainDefinition }) {
           <div className="metric-periods" aria-label="Metric period">
             {PERIODS.map((item) => <button key={item.key} type="button" className={period === item.key ? "active" : ""} onClick={() => setPeriod(item.key)}>{item.label}</button>)}
           </div>
-          <span>{metrics ? `Updated ${new Date(metrics.updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Waiting for providers"}</span>
+          <div className="metric-feed-status"><span><i /> Auto-refresh 60s</span><small>{metrics ? `Updated ${new Date(metrics.updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Waiting for providers"}</small></div>
+          <div className="metric-provider-list"><MetricStatus source="CoinGecko" /><MetricStatus source="DefiLlama" /></div>
           <button type="button" className="metric-refresh" onClick={refresh} disabled={loading}>{loading ? "Refreshing…" : "Refresh data"}</button>
         </div>
       </section>
@@ -168,7 +248,7 @@ export function ChainDetailClient({ chain }: { chain: ChainDefinition }) {
               <div className="asset-symbol"><ChainLogo chain={chain.key} size={44} /><b>{metrics.asset.symbol}</b><small>{metrics.asset.name}</small></div>
               <strong>{tokenPrice(metrics.asset.priceUsd)}</strong>
               <div className="metric-split"><span>24H <b className={(metrics.asset.change24h ?? 0) >= 0 ? "positive" : "negative"}>{percent(metrics.asset.change24h)}</b></span><span>Market cap <b>{compactUsd(metrics.asset.marketCapUsd)}</b></span></div>
-              <p>{metrics.asset.note}</p>
+              <p>{metrics.asset.note}{metrics.asset.providerUpdatedAt ? ` Provider update ${new Date(metrics.asset.providerUpdatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.` : ""}</p>
             </article>
           ) : metrics?.assetConfigured ? (
             <article className="metric-card unavailable-card"><header><span>Token market</span></header><strong>Unavailable</strong><p>CoinGecko did not return a current price. It will retry automatically.</p></article>
@@ -199,8 +279,8 @@ export function ChainDetailClient({ chain }: { chain: ChainDefinition }) {
         </div>
 
         <article className="tvl-history-card">
-          <header><div><span>TVL HISTORY</span><h2>One year liquidity trend</h2></div><small>USD · daily points</small></header>
-          {metrics?.tvl?.chart ? <Sparkline points={metrics.tvl.chart} /> : <div className="chart-unavailable">DefiLlama has not indexed usable TVL history for this network.</div>}
+          <header><div><span>TVL HISTORY</span><h2>Liquidity trend · {period.toUpperCase()}</h2></div><div className="chart-source"><MetricStatus source="DefiLlama" /><small>Latest provider data</small></div></header>
+          {metrics?.tvl?.chart ? <InteractiveTvlChart points={metrics.tvl.chart} period={period} /> : <div className="chart-unavailable">DefiLlama has not indexed usable TVL history for this network.</div>}
         </article>
 
         <div className="chain-method-note">
