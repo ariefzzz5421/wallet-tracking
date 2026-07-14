@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChainLogo } from "../components/ChainLogo";
+import { ProviderIcon } from "../components/ProviderIcon";
 import { useTrackedChains } from "../components/TrackedChainsProvider";
 import { CHAINS, CHAIN_MAP, type ChainKey } from "../lib/chains";
 import type { ChainMetrics } from "../lib/server/chain-metrics";
@@ -179,7 +180,7 @@ export default function ChainsPage() {
                       <td>
                         <div className="chain-row-actions">
                           <button type="button" className="chain-icon-button" aria-label={`${expanded ? "Close" : "Open"} ${chain.name} summary`} title={`${expanded ? "Close" : "Open"} summary`} aria-expanded={expanded} onClick={() => setSelected(expanded ? null : item.chain)}>{expanded ? "×" : "◎"}</button>
-                          {defiLlamaUrl && <a className="chain-source-button" href={defiLlamaUrl} target="_blank" rel="noreferrer" aria-label={`Open ${chain.name} on DefiLlama`} title="DefiLlama"><span className="provider-icon provider-icon-defillama">DL</span></a>}
+                          {defiLlamaUrl && <a className="chain-source-button" href={defiLlamaUrl} target="_blank" rel="noreferrer" aria-label={`Open ${chain.name} on DefiLlama`} title="DefiLlama"><ProviderIcon source="DefiLlama" /></a>}
                           <Link className="chain-icon-button" href={`/chains/${item.chain}`} aria-label={`Open ${chain.name} metrics`} title="Huntlist metrics">↗</Link>
                         </div>
                       </td>
@@ -212,8 +213,8 @@ export default function ChainsPage() {
 
           <footer className="chain-table-footer">
             <span className="chain-footer-sources">
-              <a href="https://www.coingecko.com" target="_blank" rel="noreferrer" aria-label="CoinGecko" title="CoinGecko"><i className="provider-icon provider-icon-coingecko">CG</i></a>
-              <a href="https://defillama.com/chains" target="_blank" rel="noreferrer" aria-label="DefiLlama" title="DefiLlama"><i className="provider-icon provider-icon-defillama">DL</i></a>
+              <a href="https://www.coingecko.com" target="_blank" rel="noreferrer" aria-label="CoinGecko" title="CoinGecko"><ProviderIcon source="CoinGecko" /></a>
+              <a href="https://defillama.com/chains" target="_blank" rel="noreferrer" aria-label="DefiLlama" title="DefiLlama"><ProviderIcon source="DefiLlama" /></a>
             </span>
             <span>{updatedAt ? `Updated ${new Date(updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Connecting to data feeds"}</span>
           </footer>

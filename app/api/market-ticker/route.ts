@@ -8,6 +8,7 @@ type AssetDefinition = {
   symbol: string;
   yahooSymbol: string;
   coingeckoId?: string;
+  logo: string;
 };
 
 type TickerItem = {
@@ -18,13 +19,14 @@ type TickerItem = {
   updatedAt: string | null;
   source: "Yahoo Finance" | "CoinGecko";
   sourceUrl: string;
+  logo: string;
 };
 
 const ASSETS: AssetDefinition[] = [
-  { id: "ethereum", symbol: "ETH", yahooSymbol: "ETH-USD", coingeckoId: "ethereum" },
-  { id: "solana", symbol: "SOL", yahooSymbol: "SOL-USD", coingeckoId: "solana" },
-  { id: "hyperliquid", symbol: "HYPE", yahooSymbol: "HYPE32196-USD", coingeckoId: "hyperliquid" },
-  { id: "robinhood", symbol: "HOOD", yahooSymbol: "HOOD" },
+  { id: "ethereum", symbol: "ETH", yahooSymbol: "ETH-USD", coingeckoId: "ethereum", logo: "/chains/ethereum.png" },
+  { id: "solana", symbol: "SOL", yahooSymbol: "SOL-USD", coingeckoId: "solana", logo: "/chains/solana.png" },
+  { id: "hyperliquid", symbol: "HYPE", yahooSymbol: "HYPE32196-USD", coingeckoId: "hyperliquid", logo: "/chains/hyperliquid.png" },
+  { id: "robinhood", symbol: "HOOD", yahooSymbol: "HOOD", logo: "/chains/robinhood.png" },
 ];
 
 type YahooResponse = {
@@ -85,6 +87,7 @@ async function fromYahoo(asset: AssetDefinition): Promise<TickerItem> {
     updatedAt: timestamp ? new Date(timestamp * 1_000).toISOString() : null,
     source: "Yahoo Finance",
     sourceUrl: `https://finance.yahoo.com/quote/${encodeURIComponent(asset.yahooSymbol)}`,
+    logo: asset.logo,
   };
 }
 
@@ -115,6 +118,7 @@ async function fromCoinGecko(assets: AssetDefinition[]): Promise<TickerItem[]> {
       updatedAt: timestamp ? new Date(timestamp * 1_000).toISOString() : null,
       source: "CoinGecko" as const,
       sourceUrl: `https://www.coingecko.com/en/coins/${asset.coingeckoId}`,
+      logo: asset.logo,
     }];
   });
 }

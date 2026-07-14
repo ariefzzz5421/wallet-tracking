@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type Poi
 import type { ChainMetrics, MetricPeriod } from "../lib/server/chain-metrics";
 import { CHAINS, type ChainDefinition } from "../lib/chains";
 import { ChainLogo } from "./ChainLogo";
+import { ProviderIcon, type MetricProvider } from "./ProviderIcon";
 import { useTrackedChains } from "./TrackedChainsProvider";
 
 const PERIODS: Array<{ key: MetricPeriod; label: string }> = [
@@ -149,11 +150,7 @@ function InteractiveTvlChart({ points, period }: { points: Array<{ date: number;
   );
 }
 
-function ProviderIcon({ source }: { source: "CoinGecko" | "DefiLlama" }) {
-  return <span className={`provider-icon provider-icon-${source.toLowerCase()}`} aria-hidden="true">{source === "CoinGecko" ? "CG" : "DL"}</span>;
-}
-
-function MetricStatus({ source }: { source: "CoinGecko" | "DefiLlama" }) {
+function MetricStatus({ source }: { source: MetricProvider }) {
   return <span className="metric-source"><ProviderIcon source={source} /> {source}</span>;
 }
 
