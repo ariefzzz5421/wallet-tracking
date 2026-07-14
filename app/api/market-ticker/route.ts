@@ -7,7 +7,7 @@ type AssetDefinition = {
   id: string;
   symbol: string;
   yahooSymbol: string;
-  coingeckoId: string;
+  coingeckoId?: string;
 };
 
 type TickerItem = {
@@ -24,6 +24,7 @@ const ASSETS: AssetDefinition[] = [
   { id: "ethereum", symbol: "ETH", yahooSymbol: "ETH-USD", coingeckoId: "ethereum" },
   { id: "solana", symbol: "SOL", yahooSymbol: "SOL-USD", coingeckoId: "solana" },
   { id: "hyperliquid", symbol: "HYPE", yahooSymbol: "HYPE32196-USD", coingeckoId: "hyperliquid" },
+  { id: "robinhood", symbol: "HOOD", yahooSymbol: "HOOD" },
 ];
 
 type YahooResponse = {
@@ -88,9 +89,10 @@ async function fromYahoo(asset: AssetDefinition): Promise<TickerItem> {
 }
 
 async function fromCoinGecko(assets: AssetDefinition[]): Promise<TickerItem[]> {
-  if (!assets.length) return [];
+  const supported = assets.filter((asset): asset is AssetDefinition & { coingeckoId: string } => Boolean(asset.coingeckoId));
+  if (!supported.length) return [];
   const params = new URLSearchParams({
-    ids: assets.map((asset) => asset.coingeckoId).join(","),
+    ids: supported.map((asset) => asset.coingeckoId).join(","),
     vs_currencies: "usd",
     include_24hr_change: "true",
     include_last_updated_at: "true",
@@ -100,7 +102,7 @@ async function fromCoinGecko(assets: AssetDefinition[]): Promise<TickerItem[]> {
     `https://api.coingecko.com/api/v3/simple/price?${params}`,
     demoKey ? { headers: { "x-cg-demo-api-key": demoKey } } : {},
   );
-  return assets.flatMap((asset) => {
+  return supported.flatMap((asset) => {
     const value = payload[asset.coingeckoId];
     const priceUsd = finite(value?.usd);
     if (priceUsd === null) return [];

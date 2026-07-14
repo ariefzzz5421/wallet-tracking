@@ -50,6 +50,7 @@ export function MarketTicker() {
     { id: "eth-loading", symbol: "ETH", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/ETH-USD" },
     { id: "sol-loading", symbol: "SOL", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/SOL-USD" },
     { id: "hype-loading", symbol: "HYPE", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/HYPE32196-USD" },
+    { id: "hood-loading", symbol: "HOOD", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/HOOD" },
   ];
   return (
     <div className="market-ticker" aria-label="Live token market ticker">
