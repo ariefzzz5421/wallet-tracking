@@ -7,6 +7,12 @@ type ZerionTransfer = { value?: unknown; quantity?: unknown | { float?: unknown 
 type ZerionAttributes = { operation_type?: string; transfers?: ZerionTransfer[]; mined_at?: string; confirmed_at?: string; hash?: string };
 type HyperliquidFill = { side?: string; sz?: string | number; px?: string | number; coin?: string; time?: string | number; tid?: string | number; hash?: string };
 
+function transferQuantity(transfer?: ZerionTransfer) {
+  const quantity = transfer?.quantity;
+  if (quantity && typeof quantity === "object" && "float" in quantity) return quantity.float;
+  return quantity;
+}
+
 export type FeedEvent = {
   id: string;
   walletId: string;
@@ -51,7 +57,7 @@ async function zerionEvents(wallet: WalletInput): Promise<FeedEvent[]> {
       chain: wallet.chain,
       kind: normalizeKind(operation),
       title: operation.replaceAll("_", " "),
-      amount: primary ? Math.abs(numberValue(primary.quantity?.float ?? primary.quantity)) : undefined,
+      amount: primary ? Math.abs(numberValue(transferQuantity(primary))) : undefined,
       symbol: primary?.fungible_info?.symbol || primary?.symbol,
       valueUsd: primary ? Math.abs(numberValue(primary.value)) : undefined,
       timestamp: attributes.mined_at || attributes.confirmed_at || new Date().toISOString(),
