@@ -103,7 +103,7 @@ export default function ChainsPage() {
         <div className="compact-hero">
           <div>
             <h1>Choose your<br />networks.</h1>
-            <p>Bandingkan chain dari TVL, perubahan tren, market cap, revenue, dan earnings. Klik preview untuk membuka ringkasan sebelum masuk ke halaman metric lengkap.</p>
+            <p>Bandingkan TVL, tren, market cap, revenue, dan earnings dari setiap network.</p>
           </div>
           <div className="tracked-counter"><strong>{trackedChains.length}</strong><span>of {CHAINS.length}<br />tracked</span></div>
         </div>
@@ -144,7 +144,7 @@ export default function ChainsPage() {
                   <th>Market cap</th>
                   <th>Revenue 30D</th>
                   <th>Earnings 30D</th>
-                  <th aria-label="Actions" />
+                  <th>Sources</th>
                 </tr>
               </thead>
               <tbody>
@@ -155,6 +155,7 @@ export default function ChainsPage() {
                   const chain = CHAIN_MAP[item.chain];
                   const tracked = isTracked(item.chain);
                   const expanded = selected === item.chain;
+                  const defiLlamaUrl = chain.defiLlamaSlug ? `https://defillama.com/chain/${chain.defiLlamaSlug}` : null;
                   return (
                     <tr className={expanded ? "selected" : ""} key={item.chain}>
                       <td>
@@ -175,7 +176,13 @@ export default function ChainsPage() {
                       <td>{formatMoney(item.asset?.marketCapUsd)}</td>
                       <td>{formatMoney(item.revenue?.values["1m"])}</td>
                       <td>{formatMoney(item.earnings?.values["1m"])}</td>
-                      <td><button type="button" className="chain-preview-button" aria-expanded={expanded} onClick={() => setSelected(expanded ? null : item.chain)}>{expanded ? "Close" : "Preview"}</button></td>
+                      <td>
+                        <div className="chain-row-actions">
+                          <button type="button" className="chain-icon-button" aria-label={`${expanded ? "Close" : "Open"} ${chain.name} summary`} title={`${expanded ? "Close" : "Open"} summary`} aria-expanded={expanded} onClick={() => setSelected(expanded ? null : item.chain)}>{expanded ? "×" : "◎"}</button>
+                          {defiLlamaUrl && <a className="chain-source-button" href={defiLlamaUrl} target="_blank" rel="noreferrer" aria-label={`Open ${chain.name} on DefiLlama`} title="DefiLlama"><span className="provider-icon provider-icon-defillama">DL</span></a>}
+                          <Link className="chain-icon-button" href={`/chains/${item.chain}`} aria-label={`Open ${chain.name} metrics`} title="Huntlist metrics">↗</Link>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -187,7 +194,7 @@ export default function ChainsPage() {
             <article className="chain-row-preview" aria-live="polite">
               <div className="chain-preview-heading">
                 <ChainLogo chain={preview.chain} size={56} />
-                <div><span>Selected chain</span><h3>{CHAIN_MAP[preview.chain].name}</h3><p>{CHAIN_MAP[preview.chain].description}</p></div>
+                <div><h3>{CHAIN_MAP[preview.chain].name}</h3><p>{CHAIN_MAP[preview.chain].description}</p></div>
               </div>
               <div className="chain-preview-visual">
                 <div><span>TVL · last 90 days</span><strong>{formatMoney(preview.tvl?.currentUsd)}</strong></div>
@@ -199,12 +206,15 @@ export default function ChainsPage() {
                 <span><small>Revenue 1Y</small><strong>{formatMoney(preview.revenue?.values["1y"])}</strong></span>
                 <span><small>Earnings 1Y</small><strong>{formatMoney(preview.earnings?.values["1y"])}</strong></span>
               </div>
-              <Link className="chain-preview-link" href={`/chains/${preview.chain}`}>Open full metrics <b>↗</b></Link>
+              <Link className="chain-preview-link" href={`/chains/${preview.chain}`} aria-label={`Open ${CHAIN_MAP[preview.chain].name} full metrics`} title="Open full metrics"><b>↗</b></Link>
             </article>
           )}
 
           <footer className="chain-table-footer">
-            <span>Sources: CoinGecko + DefiLlama</span>
+            <span className="chain-footer-sources">
+              <a href="https://www.coingecko.com" target="_blank" rel="noreferrer" aria-label="CoinGecko" title="CoinGecko"><i className="provider-icon provider-icon-coingecko">CG</i></a>
+              <a href="https://defillama.com/chains" target="_blank" rel="noreferrer" aria-label="DefiLlama" title="DefiLlama"><i className="provider-icon provider-icon-defillama">DL</i></a>
+            </span>
             <span>{updatedAt ? `Updated ${new Date(updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Connecting to data feeds"}</span>
           </footer>
         </div>
