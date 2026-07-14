@@ -10,6 +10,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 const title = "Huntlist — Multi-chain wallet intelligence";
 const description = "Track wallet balances, activity feeds, and verified PnL rankings across seven crypto networks.";
+const themeScript = `(function(){try{var saved=localStorage.getItem('huntlist-theme-v1');var theme=saved==='dark'||saved==='light'?saved:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}catch(e){}})()`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const incoming = await headers();
@@ -27,7 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <WatchlistProvider>
           <TrackedChainsProvider>
