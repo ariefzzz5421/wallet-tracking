@@ -41,11 +41,14 @@ Public RPC cocok untuk development, tetapi dapat terkena rate limit. Production 
 ## 3. Key opsional
 
 ```env
+COINGECKO_API_KEY=
 JUPITER_API_KEY=
 BLOCKSCOUT_API_KEY=
 ```
 
-Kedua key ini belum wajib untuk MVP. Jupiter disiapkan untuk pricing SPL token yang lebih lengkap. Blockscout disiapkan bila nanti memakai plan/indexing ber-key.
+Harga ETH, SOL, dan HYPE memakai endpoint publik CoinGecko, jadi key tidak wajib. Isi `COINGECKO_API_KEY` dengan Demo API key bila membutuhkan rate limit lebih tinggi. TVL, revenue, dan earnings memakai endpoint publik DefiLlama tanpa key.
+
+Jupiter disiapkan untuk pricing SPL token yang lebih lengkap. Blockscout disiapkan bila nanti memakai plan/indexing ber-key.
 
 ## 4. Cara menjalankan
 
@@ -58,14 +61,16 @@ Setelah mengubah ENV, restart server. Untuk deployment, simpan ENV lewat pengatu
 
 ## 5. Coverage saat ini
 
-| Chain | Balance | Feed | PnL |
-|---|---|---|---|
-| Ethereum | Zerion; Blockscout fallback | Zerion | Zerion |
-| Solana | Zerion; native SOL fallback | Zerion | Zerion |
-| Hyperliquid | HyperCore API | Hyperliquid fills | Hyperliquid portfolio history |
-| Base | Zerion; Blockscout fallback | Zerion | Zerion |
-| Tempo | Native testnet balance | Not ranked | Not ranked |
-| Arc | Native testnet balance | Not ranked | Not ranked |
-| Robinhood Chain | RPC / explorer fallback | Provider coverage pending | Provider coverage pending |
+| Chain | Balance | Feed / PnL | Market asset | TVL / Revenue |
+|---|---|---|---|---|
+| Ethereum | Zerion; Blockscout fallback | Zerion | ETH via CoinGecko | DefiLlama |
+| Solana | Zerion; native SOL fallback | Zerion | SOL via CoinGecko | DefiLlama |
+| Hyperliquid | HyperCore API | Hyperliquid | HYPE via CoinGecko | DefiLlama |
+| Base | Zerion; Blockscout fallback | Zerion | ETH gas asset via CoinGecko | DefiLlama |
+| Tempo | Native testnet balance | Not ranked | No native token | Not indexed |
+| Arc | Native testnet balance | Not ranked | Testnet USDC is not priced | Not indexed |
+| Robinhood Chain | RPC / explorer fallback | Coverage pending | ETH gas asset via CoinGecko | DefiLlama |
+
+Robinhood Stock Tokens tidak diberi market cap buatan. Halaman chain hanya menampilkan aset yang punya mapping harga dan market cap yang dapat diverifikasi oleh provider publik.
 
 Saldo dan PnL bisa tidak lengkap jika token belum memiliki harga, provider belum mengindeks transaksi, atau posisi berada di protokol yang tidak tercakup.

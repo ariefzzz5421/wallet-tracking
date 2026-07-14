@@ -5,6 +5,8 @@ Read-only multi-chain watchlist untuk Ethereum, Solana, Hyperliquid, Base, Tempo
 ## Routes
 
 - `/` — balance watchlist dan tier $5K / $10K / $100K / $1M
+- `/chains` — pilih chain yang ingin dipantau
+- `/chains/[chain]` — harga, market cap, TVL, revenue, dan earnings per chain
 - `/feed` — gabungan aktivitas wallet watchlist
 - `/profitable-wallets` — leaderboard historical PnL per timeframe
 
@@ -16,7 +18,7 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Lihat [docs/API_SETUP.md](docs/API_SETUP.md) untuk key dan coverage per chain.
+Lihat [API_SETUP.md](public/docs/API_SETUP.md) untuk key dan coverage per chain.
 
 ## Main SDKs
 

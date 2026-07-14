@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const items = [
   { href: "/", label: "Watchlist" },
+  { href: "/chains", label: "Chains" },
   { href: "/feed", label: "Wallet feed" },
   { href: "/profitable-wallets", label: "Top profitable" },
 ];
@@ -19,7 +20,7 @@ export function Navigation() {
       </Link>
       <nav className="main-nav" aria-label="Main navigation">
         {items.map((item) => (
-          <Link key={item.href} href={item.href} className={pathname === item.href ? "active" : ""}>
+          <Link key={item.href} href={item.href} className={pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`)) ? "active" : ""}>
             {item.label}
           </Link>
         ))}
