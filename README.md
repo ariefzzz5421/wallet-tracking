@@ -25,3 +25,7 @@ Lihat [docs/API_SETUP.md](docs/API_SETUP.md) untuk key dan coverage per chain.
 - `zod` for environment validation
 - Zerion REST API for indexed portfolio, transactions, and PnL
 - Hyperliquid Info API for fills and portfolio history
+
+## Agent skills
+
+Read-only GMGN research skills are installed under `.agents/skills`: market discovery, token due diligence, wallet portfolio analysis, and Smart Money/KOL tracking. See [docs/GMGN_SKILLS.md](docs/GMGN_SKILLS.md). Trading and private-key operations are explicitly excluded.
