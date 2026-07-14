@@ -43,3 +43,16 @@ html[data-theme=dark] .hero p,html[data-theme=dark] .page-hero p,html[data-theme
 
 @media(prefers-reduced-motion:reduce){.ticker-track{animation:none}.status-dot.syncing,.live-indicator i,.metric-feed-status>span i{animation:none}}
 @media(max-width:700px){.market-ticker{height:35px}.ticker-item{min-width:180px;padding:0 14px}.ticker-item strong,.ticker-item span{font-size:10px}.ticker-item b{font-size:9px}.theme-toggle{width:36px;height:36px}.chain-market-table td{font-size:13px}}
+
+/* Complete brand marks */
+.chain-logo img{object-fit:contain}.chain-logo-ethereum img{transform:scale(.82)}.chain-logo-solana img{transform:scale(.88)}
+.ticker-item{min-width:225px}.ticker-logo{width:24px;height:24px;flex:0 0 24px;border:1px solid #384149;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#050505}.ticker-logo img{display:block;width:100%;height:100%;object-fit:contain}.ticker-logo-ethereum img{transform:scale(.78)}.ticker-logo-solana img{transform:scale(.86)}.ticker-logo-hyperliquid{background:#062d29}.ticker-logo-hyperliquid img{transform:scale(.9)}.ticker-logo-robinhood{background:#caff00}.ticker-logo-robinhood img{transform:scale(.9)}
+.provider-icon-defillama{padding:1px;overflow:hidden;background:#1768d2}.provider-icon-defillama img{display:block;width:100%;height:100%;object-fit:contain}.chain-source-button .provider-icon-defillama{width:25px;height:25px;border:0}.chain-footer-sources .provider-icon-defillama{width:24px;height:24px}
+
+/* Logo-enabled network filters */
+.chain-filter-picker{min-width:0}.filter-row>.chain-filter-picker,.tool-row>.chain-filter-picker{width:100%}.filter-row .chain-picker-trigger,.tool-row .chain-picker-trigger{height:48px;border-color:var(--line)}.chain-filter-picker .chain-picker-menu{min-width:285px}.all-networks-mark{width:30px;height:30px;border:1px solid var(--ink);border-radius:10px;display:flex!important;align-items:flex-end!important;justify-content:center;gap:2px;padding:6px;background:var(--lime);flex:0 0 auto}.all-networks-mark i{display:block;width:4px;border-radius:4px;background:#171714}.all-networks-mark i:nth-child(1){height:8px}.all-networks-mark i:nth-child(2){height:16px}.all-networks-mark i:nth-child(3){height:12px}.chain-picker-option>.all-networks-mark{display:flex!important;gap:2px}
+
+/* Swap execution preview */
+.feed-event:has(.swap-preview){min-height:154px}.swap-preview{display:flex;align-items:center;gap:10px;margin-top:12px}.swap-preview>i{font-style:normal;color:var(--muted);font-size:17px}.swap-leg{min-width:150px;border:1px solid var(--line);background:var(--surface);padding:9px 11px;display:grid;gap:3px}.swap-leg small{font:650 8px var(--font-geist-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.swap-leg b{font-size:12px}.swap-leg em{font:500 9px var(--font-geist-mono);font-style:normal;color:var(--muted)}.swap-leg.outgoing{border-left:3px solid #f0525a}.swap-leg.incoming{border-left:3px solid #31c77a}.event-value strong{font-variant-numeric:tabular-nums}
+
+@media(max-width:700px){.ticker-item{min-width:205px}.filter-row>.chain-filter-picker,.tool-row>.chain-filter-picker{flex:1 1 190px}.swap-preview{align-items:stretch;flex-direction:column}.swap-preview>i{display:none}.swap-leg{min-width:0;width:100%}.feed-event:has(.swap-preview){min-height:220px}}

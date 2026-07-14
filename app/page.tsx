@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChainPicker } from "./components/ChainPicker";
+import { ChainFilterPicker, type ChainFilterValue } from "./components/ChainFilterPicker";
 import { ChainLogo } from "./components/ChainLogo";
 import { SAMPLE_WALLETS, useWatchlist, type WatchedWallet } from "./components/WatchlistProvider";
 import { CHAINS, CHAIN_MAP, isWalletAddress, type ChainKey } from "./lib/chains";
@@ -31,7 +32,7 @@ export default function Home() {
   const [label, setLabel] = useState("");
   const [address, setAddress] = useState("");
   const [query, setQuery] = useState("");
-  const [chainFilter, setChainFilter] = useState<"all" | ChainKey>("all");
+  const [chainFilter, setChainFilter] = useState<ChainFilterValue>("all");
   const [minimum, setMinimum] = useState<number>(5_000);
   const [message, setMessage] = useState("");
   const [syncingAll, setSyncingAll] = useState(false);
@@ -136,7 +137,7 @@ export default function Home() {
 
         <div className="filter-row">
           <label className="search-control"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search label or address" /></label>
-          <select value={chainFilter} onChange={(event) => setChainFilter(event.target.value as "all" | ChainKey)}><option value="all">All networks</option>{CHAINS.map((item) => <option key={item.key} value={item.key}>{item.name}</option>)}</select>
+          <ChainFilterPicker value={chainFilter} onChange={setChainFilter} label="Filter watchlist by network" />
           <div className="tier-tabs" aria-label="Minimum balance">{TIERS.map((tier) => <button key={tier} className={minimum === tier ? "active" : ""} onClick={() => setMinimum(tier)}>{money(tier)}+</button>)}</div>
         </div>
 

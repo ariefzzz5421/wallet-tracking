@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
 type TickerItem = {
@@ -9,6 +10,7 @@ type TickerItem = {
   change24h: number | null;
   source: "Yahoo Finance" | "CoinGecko";
   sourceUrl: string;
+  logo: string;
 };
 
 type TickerResponse = { items?: TickerItem[] };
@@ -47,10 +49,10 @@ export function MarketTicker() {
   }, [loadTicker]);
 
   const tapeItems = items.length ? items : [
-    { id: "eth-loading", symbol: "ETH", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/ETH-USD" },
-    { id: "sol-loading", symbol: "SOL", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/SOL-USD" },
-    { id: "hype-loading", symbol: "HYPE", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/HYPE32196-USD" },
-    { id: "hood-loading", symbol: "HOOD", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/HOOD" },
+    { id: "eth-loading", symbol: "ETH", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/ETH-USD", logo: "/chains/ethereum.png" },
+    { id: "sol-loading", symbol: "SOL", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/SOL-USD", logo: "/chains/solana.png" },
+    { id: "hype-loading", symbol: "HYPE", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/HYPE32196-USD", logo: "/chains/hyperliquid.png" },
+    { id: "hood-loading", symbol: "HOOD", priceUsd: 0, change24h: null, source: "Yahoo Finance" as const, sourceUrl: "https://finance.yahoo.com/quote/HOOD", logo: "/chains/robinhood.png" },
   ];
   return (
     <div className="market-ticker" aria-label="Live token market ticker">
@@ -61,6 +63,7 @@ export function MarketTicker() {
               const change = item.change24h;
               return (
                 <a href={item.sourceUrl} target="_blank" rel="noreferrer" title={`Data from ${item.source}`} className="ticker-item" key={`${setIndex}-${itemIndex}-${item.id}`}>
+                  <span className={`ticker-logo ticker-logo-${item.id}`}><Image unoptimized src={item.logo} alt="" width={256} height={256} sizes="24px" /></span>
                   <strong>{item.symbol}</strong>
                   <span>{items.length ? `$${formatPrice(item.priceUsd)}` : "SYNC"}</span>
                   <b className={change == null ? "muted" : change >= 0 ? "positive" : "negative"}>

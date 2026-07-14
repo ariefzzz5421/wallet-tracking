@@ -3,14 +3,26 @@ import { CHAIN_MAP, isChainKey, type ChainKey } from "../../lib/chains";
 import { errorMessage, fetchJson, getEnv, numberValue, zerionFetch } from "../../lib/server/providers";
 
 type WalletInput = { id: string; label: string; address: string; chain: ChainKey };
-type ZerionTransfer = { value?: unknown; quantity?: unknown | { float?: unknown }; fungible_info?: { symbol?: string }; symbol?: string };
-type ZerionAttributes = { operation_type?: string; transfers?: ZerionTransfer[]; mined_at?: string; confirmed_at?: string; hash?: string };
+type ZerionTransfer = {
+  direction?: "in" | "out";
+  value?: unknown;
+  quantity?: unknown | { float?: unknown };
+  fungible_info?: { symbol?: string; icon?: { url?: string } };
+  symbol?: string;
+};
+type ZerionAttributes = { operation_type?: string; transfers?: ZerionTransfer[]; fee?: { value?: unknown }; mined_at?: string; confirmed_at?: string; hash?: string };
 type HyperliquidFill = { side?: string; sz?: string | number; px?: string | number; coin?: string; time?: string | number; tid?: string | number; hash?: string };
 
 function transferQuantity(transfer?: ZerionTransfer) {
   const quantity = transfer?.quantity;
   if (quantity && typeof quantity === "object" && "float" in quantity) return quantity.float;
   return quantity;
+}
+
+function optionalNumber(value: unknown) {
+  if (typeof value !== "number" && typeof value !== "string") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 export type FeedEvent = {
@@ -27,6 +39,16 @@ export type FeedEvent = {
   timestamp: string;
   hash?: string;
   source: "Zerion" | "Hyperliquid";
+  movements?: FeedTokenMovement[];
+  balanceChangeUsd?: number;
+  feeUsd?: number;
+};
+
+export type FeedTokenMovement = {
+  direction: "in" | "out";
+  amount: number;
+  symbol: string;
+  valueUsd?: number;
 };
 
 function normalizeKind(operation: string): FeedEvent["kind"] {
@@ -47,22 +69,44 @@ async function zerionEvents(wallet: WalletInput): Promise<FeedEvent[]> {
   return (result.data ?? []).map((item, index) => {
     const attributes = item.attributes ?? {};
     const transfers = Array.isArray(attributes.transfers) ? attributes.transfers : [];
-    const primary = [...transfers].sort((a, b) => Math.abs(numberValue(b.value)) - Math.abs(numberValue(a.value)))[0];
     const operation = String(attributes.operation_type || "activity");
+    const movements = transfers.flatMap((transfer): FeedTokenMovement[] => {
+      if (transfer.direction !== "in" && transfer.direction !== "out") return [];
+      const symbol = transfer.fungible_info?.symbol || transfer.symbol;
+      const amount = Math.abs(numberValue(transferQuantity(transfer)));
+      if (!symbol || amount <= 0) return [];
+      const parsed = optionalNumber(transfer.value);
+      const parsedValue = parsed === undefined ? undefined : Math.abs(parsed);
+      return [{ direction: transfer.direction, amount, symbol, valueUsd: parsedValue }];
+    });
+    const outgoing = movements.filter((movement) => movement.direction === "out").sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0))[0];
+    const incoming = movements.filter((movement) => movement.direction === "in").sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0))[0];
+    const operationKind = normalizeKind(operation);
+    const kind = operationKind === "swap" || (operation.toLowerCase().includes("execute") && outgoing && incoming) ? "swap" : operationKind;
+    const primary = incoming ?? outgoing;
+    const parsedFee = optionalNumber(attributes.fee?.value);
+    const feeUsd = parsedFee === undefined ? undefined : Math.abs(parsedFee);
+    const pricedMovements = movements.filter((movement) => movement.valueUsd !== undefined);
+    const balanceChangeUsd = pricedMovements.length
+      ? pricedMovements.reduce((sum, movement) => sum + (movement.direction === "in" ? 1 : -1) * (movement.valueUsd ?? 0), 0) - (feeUsd ?? 0)
+      : undefined;
     return {
       id: item.id || `${wallet.id}-zerion-${index}`,
       walletId: wallet.id,
       walletLabel: wallet.label,
       address: wallet.address,
       chain: wallet.chain,
-      kind: normalizeKind(operation),
-      title: operation.replaceAll("_", " "),
-      amount: primary ? Math.abs(numberValue(transferQuantity(primary))) : undefined,
-      symbol: primary?.fungible_info?.symbol || primary?.symbol,
-      valueUsd: primary ? Math.abs(numberValue(primary.value)) : undefined,
+      kind,
+      title: kind === "swap" && outgoing && incoming ? `Swap ${outgoing.symbol} → ${incoming.symbol}` : operation.replaceAll("_", " "),
+      amount: primary?.amount,
+      symbol: primary?.symbol,
+      valueUsd: primary?.valueUsd,
       timestamp: attributes.mined_at || attributes.confirmed_at || new Date().toISOString(),
       hash: attributes.hash,
       source: "Zerion" as const,
+      movements: kind === "swap" ? [outgoing, incoming].filter((movement): movement is FeedTokenMovement => Boolean(movement)) : undefined,
+      balanceChangeUsd: kind === "swap" ? balanceChangeUsd : undefined,
+      feeUsd: kind === "swap" ? feeUsd : undefined,
     };
   });
 }
