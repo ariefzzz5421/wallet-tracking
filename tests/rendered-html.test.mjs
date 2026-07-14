@@ -11,7 +11,19 @@ async function render(path) {
   }, { waitUntil() {}, passThroughOnException() {} });
 }
 
-for (const [path, expected] of [["/", "Find wallets"], ["/feed", "Wallet Feed"], ["/profitable-wallets", "Top Profitable"]]) {
+for (const [path, expected] of [
+  ["/", "Find wallets"],
+  ["/chains", "Choose your"],
+  ["/chains/ethereum", "Ethereum L1"],
+  ["/chains/solana", "Solana"],
+  ["/chains/hyperliquid", "Hyperliquid"],
+  ["/chains/base", "Base L2"],
+  ["/chains/tempo", "Tempo"],
+  ["/chains/arc", "Arc Chain"],
+  ["/chains/robinhood", "Robinhood Chain"],
+  ["/feed", "Wallet Feed"],
+  ["/profitable-wallets", "Top Profitable"],
+]) {
   test(`server-renders ${path}`, async () => {
     const response = await render(path);
     assert.equal(response.status, 200);

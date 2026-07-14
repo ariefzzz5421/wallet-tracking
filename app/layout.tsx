@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import { Navigation } from "./components/Navigation";
+import { TrackedChainsProvider } from "./components/TrackedChainsProvider";
 import { WatchlistProvider } from "./components/WatchlistProvider";
 import "./globals.css";
 
@@ -28,8 +29,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <WatchlistProvider>
-          <Navigation />
-          {children}
+          <TrackedChainsProvider>
+            <Navigation />
+            {children}
+          </TrackedChainsProvider>
         </WatchlistProvider>
       </body>
     </html>

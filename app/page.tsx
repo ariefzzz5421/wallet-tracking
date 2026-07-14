@@ -97,9 +97,9 @@ export default function Home() {
           </div>
           <div className="hero-aside">
             <div className="network-stack" aria-label="Supported networks">
-              {CHAINS.map((item) => <ChainLogo key={item.key} chain={item.key} size={44} />)}
+              {CHAINS.map((item) => <Link key={item.key} href={`/chains/${item.key}`} aria-label={`Open ${item.name} metrics`}><ChainLogo chain={item.key} size={44} /></Link>)}
             </div>
-            <p><strong>7 networks</strong><br />One watchlist. Read-only by design.</p>
+            <p><strong>7 networks</strong><br />One watchlist. <Link href="/chains">Choose chains →</Link></p>
           </div>
         </div>
       </section>
@@ -157,8 +157,9 @@ export default function Home() {
       </section>
 
       <section className="shell onward-grid">
-        <Link href="/feed" className="onward-card"><span>03</span><div><small>WATCHLIST ACTIVITY</small><h3>Wallet Feed</h3><p>Buy, sell, swap, transfer—diurutkan dari aktivitas terbaru.</p></div><b>↗</b></Link>
-        <Link href="/profitable-wallets" className="onward-card lime"><span>04</span><div><small>PERFORMANCE</small><h3>Top Profitable</h3><p>Ranking PnL berdasarkan periode, bukan berdasarkan saldo terbesar.</p></div><b>↗</b></Link>
+        <Link href="/chains" className="onward-card ink"><span>03</span><div><small>CHAIN INTELLIGENCE</small><h3>Network Metrics</h3><p>Harga, market cap, TVL, revenue, dan earnings per chain.</p></div><b>↗</b></Link>
+        <Link href="/feed" className="onward-card"><span>04</span><div><small>WATCHLIST ACTIVITY</small><h3>Wallet Feed</h3><p>Buy, sell, swap, transfer—diurutkan dari aktivitas terbaru.</p></div><b>↗</b></Link>
+        <Link href="/profitable-wallets" className="onward-card lime"><span>05</span><div><small>PERFORMANCE</small><h3>Top Profitable</h3><p>Ranking PnL berdasarkan periode, bukan berdasarkan saldo terbesar.</p></div><b>↗</b></Link>
       </section>
     </main>
   );
