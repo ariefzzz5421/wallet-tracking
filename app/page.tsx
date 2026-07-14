@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
+import { ChainPicker } from "./components/ChainPicker";
 import { ChainLogo } from "./components/ChainLogo";
 import { SAMPLE_WALLETS, useWatchlist, type WatchedWallet } from "./components/WatchlistProvider";
 import { CHAINS, CHAIN_MAP, isWalletAddress, type ChainKey } from "./lib/chains";
@@ -110,7 +111,7 @@ export default function Home() {
           <p>Data watchlist tersimpan lokal di browser ini.</p>
         </div>
         <form className="wallet-form" onSubmit={handleSubmit}>
-          <label><span>Network</span><select value={chain} onChange={(event) => setChain(event.target.value as ChainKey)}>{CHAINS.map((item) => <option key={item.key} value={item.key}>{item.name}</option>)}</select></label>
+          <div className="wallet-field"><span id="network-field-label">Network</span><ChainPicker value={chain} onChange={setChain} labelId="network-field-label" /></div>
           <label><span>Wallet label</span><input value={label} onChange={(event) => setLabel(event.target.value)} placeholder="e.g. Smart money #1" maxLength={40} /></label>
           <label className="address-field"><span>Public address</span><input value={address} onChange={(event) => setAddress(event.target.value)} placeholder={chain === "solana" ? "Solana address" : "0x…"} spellCheck={false} /></label>
           <button className="primary-button" type="submit" disabled={!ready}>Track wallet <span>↗</span></button>

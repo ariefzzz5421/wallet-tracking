@@ -14,10 +14,10 @@ async function render(path) {
 for (const [path, expected] of [
   ["/", "Find wallets"],
   ["/chains", "Choose your"],
-  ["/chains/ethereum", "Ethereum L1"],
+  ["/chains/ethereum", "Ethereum"],
   ["/chains/solana", "Solana"],
   ["/chains/hyperliquid", "Hyperliquid"],
-  ["/chains/base", "Base L2"],
+  ["/chains/base", "Base"],
   ["/chains/tempo", "Tempo"],
   ["/chains/arc", "Arc Chain"],
   ["/chains/robinhood", "Robinhood Chain"],
