@@ -5,7 +5,7 @@ export function ChainLogo({ chain, size = 30, decorative = false }: { chain: Cha
   const item = CHAIN_MAP[chain];
   return (
     <span className={`chain-logo chain-logo-${chain}`} style={{ width: size, height: size }}>
-      <Image unoptimized src={item.logo} alt={decorative ? "" : `${item.name} logo`} width={size} height={size} sizes={`${size}px`} />
+      <Image unoptimized src={item.logo} alt={decorative ? "" : `${item.name} logo`} width={256} height={256} sizes={`${size}px`} />
     </span>
   );
 }
