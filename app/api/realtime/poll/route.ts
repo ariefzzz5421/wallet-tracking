@@ -25,7 +25,7 @@ export type RealtimePollEvent = {
 const DEFAULT_RPC: Partial<Record<ChainKey, string>> = {
   ethereum: "https://ethereum-rpc.publicnode.com",
   base: "https://mainnet.base.org",
-  tempo: "https://rpc.moderato.tempo.xyz",
+  tempo: "https://rpc.mainnet.tempo.xyz",
   arc: "https://rpc.testnet.arc.network",
   robinhood: "https://rpc.mainnet.chain.robinhood.com",
 };

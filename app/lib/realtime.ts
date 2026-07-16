@@ -37,8 +37,8 @@ export const REALTIME_NETWORKS: Record<ChainKey, RealtimeNetwork> = {
   tempo: {
     chain: "tempo",
     kind: "evm",
-    websocketUrl: "wss://rpc.moderato.tempo.xyz",
-    label: "Tempo testnet WebSocket",
+    websocketUrl: "wss://rpc.mainnet.tempo.xyz",
+    label: "Tempo mainnet WebSocket",
   },
   arc: {
     chain: "arc",

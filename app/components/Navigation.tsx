@@ -11,6 +11,7 @@ const items = [
   { href: "/chains", label: "Chains" },
   { href: "/feed", label: "Wallet feed" },
   { href: "/profitable-wallets", label: "Top profitable" },
+  { href: "/x402", label: "x402" },
 ];
 
 export function Navigation() {
