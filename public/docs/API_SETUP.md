@@ -38,7 +38,18 @@ Rekomendasi praktis:
 
 Public RPC cocok untuk development, tetapi dapat terkena rate limit. Production sebaiknya memakai endpoint milik akunmu.
 
-## 3. Key opsional
+## 3. Realtime wallet alerts
+
+Realtime listener langsung aktif ketika ada wallet di watchlist dan website sedang terbuka. Tidak ada private key atau API key yang dikirim ke browser.
+
+- Ethereum, Base, Tempo, dan Arc memakai subscription WebSocket standar EVM;
+- Solana memakai `logsSubscribe` untuk alamat wallet;
+- Hyperliquid memakai `userFills` dan `userNonFundingLedgerUpdates`;
+- Robinhood Chain memakai polling public RPC setiap 10 detik karena WebSocket JSON-RPC resminya membutuhkan provider key.
+
+Jika WebSocket EVM terputus berulang kali, aplikasi otomatis beralih ke RPC polling dan mencoba menyambung kembali. Browser notification harus diaktifkan sekali oleh user dari tombol realtime di kanan atas. Toast di dalam website tetap aktif tanpa permission.
+
+## 4. Key opsional
 
 ```env
 COINGECKO_API_KEY=
@@ -50,7 +61,7 @@ Harga ETH, SOL, dan HYPE memakai endpoint publik CoinGecko, jadi key tidak wajib
 
 Jupiter disiapkan untuk pricing SPL token yang lebih lengkap. Blockscout disiapkan bila nanti memakai plan/indexing ber-key.
 
-## 4. Cara menjalankan
+## 5. Cara menjalankan
 
 ```powershell
 Copy-Item .env.example .env.local
@@ -59,17 +70,17 @@ npm run dev
 
 Setelah mengubah ENV, restart server. Untuk deployment, simpan ENV lewat pengaturan hosting dan jangan commit `.env.local`.
 
-## 5. Coverage saat ini
+## 6. Coverage saat ini
 
-| Chain | Balance | Feed / PnL | Market asset | TVL / Revenue |
-|---|---|---|---|---|
-| Ethereum | Zerion; Blockscout fallback | Zerion | ETH via CoinGecko | DefiLlama |
-| Solana | Zerion; native SOL fallback | Zerion | SOL via CoinGecko | DefiLlama |
-| Hyperliquid | HyperCore API | Hyperliquid | HYPE via CoinGecko | DefiLlama |
-| Base | Zerion; Blockscout fallback | Zerion | ETH gas asset via CoinGecko | DefiLlama |
-| Tempo | Native testnet balance | Not ranked | No native token | Not indexed |
-| Arc | Native testnet balance | Not ranked | Testnet USDC is not priced | Not indexed |
-| Robinhood Chain | RPC / explorer fallback | Coverage pending | ETH gas asset via CoinGecko | DefiLlama |
+| Chain | Balance | Feed / PnL | Realtime | Market asset | TVL / Revenue |
+|---|---|---|---|---|---|
+| Ethereum | Zerion; Blockscout fallback | Zerion | WebSocket + RPC fallback | ETH via CoinGecko | DefiLlama |
+| Solana | Zerion; native SOL fallback | Zerion | WebSocket | SOL via CoinGecko | DefiLlama |
+| Hyperliquid | HyperCore API | Hyperliquid | WebSocket | HYPE via CoinGecko | DefiLlama |
+| Base | Zerion; Blockscout fallback | Zerion | WebSocket + RPC fallback | ETH gas asset via CoinGecko | DefiLlama |
+| Tempo | Native testnet balance | Not ranked | Testnet WebSocket + RPC fallback | No native token | Not indexed |
+| Arc | Native testnet balance | Not ranked | Testnet WebSocket + RPC fallback | Testnet USDC is not priced | Not indexed |
+| Robinhood Chain | RPC / explorer fallback | Coverage pending | RPC polling | ETH gas asset via CoinGecko | DefiLlama |
 
 Robinhood Stock Tokens tidak diberi market cap buatan. Halaman chain hanya menampilkan aset yang punya mapping harga dan market cap yang dapat diverifikasi oleh provider publik.
 

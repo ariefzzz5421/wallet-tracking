@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { FeedEvent } from "../api/feed/route";
 import { ChainFilterPicker, type ChainFilterValue } from "../components/ChainFilterPicker";
 import { ChainLogo } from "../components/ChainLogo";
+import { useRealtime } from "../components/RealtimeProvider";
 import { useWatchlist } from "../components/WatchlistProvider";
 import { CHAIN_MAP, transactionUrl } from "../lib/chains";
 
@@ -38,6 +39,7 @@ function ago(value: string) {
 
 export default function FeedPage() {
   const { wallets, ready } = useWatchlist();
+  const { revision } = useRealtime();
   const [events, setEvents] = useState<FeedEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [kind, setKind] = useState("all");
@@ -69,7 +71,7 @@ export default function FeedPage() {
       .then(async (response) => ({ ok: response.ok, result: await response.json() }))
       .then(({ ok, result }) => { if (ok) { setEvents(result.events || []); setConfigured(result.configured); setErrorCount(result.errors?.length || 0); } })
       .catch(() => setErrorCount(wallets.length));
-  }, [ready, wallets]);
+  }, [ready, revision, wallets]);
 
   const display = wallets.length ? events : PREVIEW;
   const filtered = useMemo(() => display.filter((event) => (kind === "all" || event.kind === kind) && (chain === "all" || event.chain === chain)), [display, kind, chain]);

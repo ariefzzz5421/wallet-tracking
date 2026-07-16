@@ -62,7 +62,9 @@ function normalizeKind(operation: string): FeedEvent["kind"] {
 
 async function zerionEvents(wallet: WalletInput): Promise<FeedEvent[]> {
   const query = new URLSearchParams({ currency: "usd", "page[size]": "20", "filter[trash]": "only_non_trash" });
-  if (CHAIN_MAP[wallet.chain].zerionId) query.set("filter[chain_ids]", CHAIN_MAP[wallet.chain].zerionId!);
+  const chainId = CHAIN_MAP[wallet.chain].zerionId;
+  if (!chainId) throw new Error(`${CHAIN_MAP[wallet.chain].name} transaction indexing is not available through Zerion yet.`);
+  query.set("filter[chain_ids]", chainId);
   const result = await zerionFetch<{ data?: Array<{ id?: string; attributes?: ZerionAttributes }> }>(
     `/v1/wallets/${wallet.address}/transactions/?${query}`,
   );
