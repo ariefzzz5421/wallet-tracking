@@ -22,7 +22,7 @@ export function getEnv() {
     ...parsed.data,
     SOLANA_RPC_URL: parsed.data.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com",
     HYPERLIQUID_API_URL: parsed.data.HYPERLIQUID_API_URL || "https://api.hyperliquid.xyz",
-    TEMPO_RPC_URL: parsed.data.TEMPO_RPC_URL || "https://rpc.moderato.tempo.xyz",
+    TEMPO_RPC_URL: parsed.data.TEMPO_RPC_URL || "https://rpc.mainnet.tempo.xyz",
     ARC_RPC_URL: parsed.data.ARC_RPC_URL || "https://rpc.testnet.arc.network",
   };
 }

@@ -1,6 +1,8 @@
 # Huntlist Wallet Tracker
 
-Read-only multi-chain watchlist untuk Ethereum, Solana, Hyperliquid, Base, Tempo, Arc, dan Robinhood Chain.
+Read-only multi-chain watchlist untuk Ethereum, Solana, Hyperliquid, Base, Tempo mainnet, Arc testnet, dan Robinhood Chain.
+
+Route `/x402` menyediakan dashboard live untuk settlement, volume, buyer, seller, facilitator, dan transaksi x402. Data dibaca melalui endpoint public server-side dari [x402scan](https://github.com/ariefzzz5421/x402scan); Huntlist tidak menandatangani atau mengeksekusi pembayaran.
 
 ## Routes
 

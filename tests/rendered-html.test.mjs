@@ -23,6 +23,7 @@ for (const [path, expected] of [
   ["/chains/robinhood", "Robinhood Chain"],
   ["/feed", "Wallet Feed"],
   ["/profitable-wallets", "Top Profitable"],
+  ["/x402", "x402 Network"],
 ]) {
   test(`server-renders ${path}`, async () => {
     const response = await render(path);

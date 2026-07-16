@@ -34,7 +34,8 @@ Rekomendasi praktis:
 - Ethereum / Base / Robinhood Chain: Alchemy atau QuickNode;
 - Solana: Helius atau QuickNode;
 - Hyperliquid: tidak membutuhkan API key untuk Info API;
-- Tempo dan Arc: saat ini memakai public testnet RPC bawaan.
+- Tempo: memakai public mainnet RPC bawaan (`https://rpc.mainnet.tempo.xyz`).
+- Arc: public mainnet belum tersedia; Huntlist tetap menandainya sebagai testnet dan tidak menganggapnya live.
 
 Public RPC cocok untuk development, tetapi dapat terkena rate limit. Production sebaiknya memakai endpoint milik akunmu.
 
@@ -75,7 +76,7 @@ Setelah mengubah ENV, restart server. Untuk deployment, simpan ENV lewat pengatu
 | Solana | Zerion; native SOL fallback | Zerion | Zerion | WebSocket |
 | Hyperliquid | HyperCore API | Hyperliquid fills | Hyperliquid portfolio history | WebSocket |
 | Base | Zerion; Blockscout fallback | Zerion | Zerion | WebSocket + RPC fallback |
-| Tempo | Native testnet balance | Not ranked | Not ranked | Testnet WebSocket + RPC fallback |
+| Tempo | Stablecoin/gas balance | DefiLlama | DefiLlama | Mainnet WebSocket + RPC fallback |
 | Arc | Native testnet balance | Not ranked | Not ranked | Testnet WebSocket + RPC fallback |
 | Robinhood Chain | RPC / explorer fallback | Provider coverage pending | Provider coverage pending | RPC polling |
 
