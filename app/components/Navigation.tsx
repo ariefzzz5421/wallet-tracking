@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MarketTicker } from "./MarketTicker";
+import { RealtimeCenter } from "./RealtimeCenter";
 import { ThemeToggle } from "./ThemeToggle";
 
 const items = [
@@ -28,7 +29,10 @@ export function Navigation() {
             </Link>
           ))}
         </nav>
-        <ThemeToggle />
+        <div className="topbar-actions">
+          <RealtimeCenter />
+          <ThemeToggle />
+        </div>
       </div>
       <MarketTicker />
     </header>

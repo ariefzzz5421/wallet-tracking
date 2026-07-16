@@ -10,6 +10,8 @@ Read-only multi-chain watchlist untuk Ethereum, Solana, Hyperliquid, Base, Tempo
 - `/feed` — gabungan aktivitas wallet watchlist
 - `/profitable-wallets` — leaderboard historical PnL per timeframe
 
+Saat website terbuka, Huntlist otomatis memasang listener realtime untuk wallet di watchlist. Aktivitas baru memunculkan toast, dapat diteruskan sebagai browser notification, dan menyegarkan `/feed` tanpa tombol refresh.
+
 ## Start
 
 ```powershell
@@ -27,6 +29,7 @@ Lihat [API_SETUP.md](public/docs/API_SETUP.md) untuk key dan coverage per chain.
 - `zod` for environment validation
 - Zerion REST API for indexed portfolio, transactions, and PnL
 - Hyperliquid Info API for fills and portfolio history
+- Native browser WebSocket listeners for onchain wallet activity
 
 ## Agent skills
 
